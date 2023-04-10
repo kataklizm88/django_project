@@ -1,5 +1,5 @@
 from django.urls import path
-from authapp.views import RegisterCreateView,  LoginCreateView, ProfileCreateView, LogoutUserView
+from authapp.views import RegisterCreateView,  LoginCreateView, ProfileCreateView, LogoutUserView, verify
 app_name = 'authapp'
 
 urlpatterns = [
@@ -7,4 +7,5 @@ urlpatterns = [
     path('register/', RegisterCreateView.as_view(), name='register'),
     path('logout/', LogoutUserView.as_view(), name='logout'),
     path('profile/', ProfileCreateView.as_view(), name='profile'),
+    path('verify/<int:user_id>/<hash>', verify, name='verify'),
 ]

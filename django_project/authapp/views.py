@@ -1,4 +1,5 @@
-from django.shortcuts import render, HttpResponseRedirect
+from django.contrib import auth, messages
+from django.shortcuts import render
 from authapp.forms import UserLoginForm, UserRegisterForm, UserProfileForm
 from django.urls import reverse_lazy
 from basket.models import Basket
@@ -7,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic.edit import CreateView
 from django.utils.decorators import method_decorator
+from .utils import send_verify_mail
+
 
 
 class LoginCreateView(LoginView):
@@ -46,6 +49,17 @@ class RegisterCreateView(CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         return super(RegisterCreateView, self).dispatch(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form = self.get_form()
+        if form.is_valid():
+            user = form.save()
+            send_verify_mail(user)
+            messages.success(request, message='Проверьте почту')
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 
 class LogoutUserView(LogoutView):
@@ -53,3 +67,13 @@ class LogoutUserView(LogoutView):
 
     def dispatch(self, request, *args, **kwargs):
         return super(LogoutUserView, self).dispatch(request, *args, **kwargs)
+
+
+def verify(request, user_id, hash):
+    user = User.objects.get(pk=user_id)
+    if user.activation_key == hash and not user.is_activation_key_expires():
+        user.is_active = True
+        user.activation_key = None
+        user.save()
+        auth.login(request, user)
+    return render(request, 'authapp/verification.html')

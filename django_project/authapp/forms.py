@@ -1,6 +1,9 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm
 from authapp.models import User
 from django import forms
+import hashlib
+import random
+
 
 class UserLoginForm(AuthenticationForm):
     class Meta:
@@ -31,6 +34,13 @@ class UserRegisterForm(UserCreationForm):
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control py-4'
 
+    def save(self, commit=True):
+        user = super(UserRegisterForm, self).save()
+        user.is_active = False
+        salt = str(random.random())
+        user.activation_key = hashlib.sha512((str(user.email) + salt).encode('utf-8')).hexdigest()
+        user.save()
+        return user
 
 class UserProfileForm(UserChangeForm):
     avatar = forms.ImageField(widget=forms.FileInput())
