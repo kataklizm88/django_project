@@ -40,7 +40,7 @@
                 </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'auth:profile' %}">{{ user.first_name | title}}
+                        <a class="nav-link" href="{% url 'auth:profile' %}">{{user.username | title}}
                             <i class="fas fa-user-circle"></i>
                         </a>
                     </li>
@@ -52,9 +52,12 @@
                             <a class="nav-link" href="{% url 'admins:index' %}"><i class="fas fa-users"></i></a>
                         </li>
                     {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" >В корзине на {{total}} рублей</a>
+                    </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'auth:login' %}">Войти <i class="fas fa-sign-in-alt"></i></a>
+                        <a class="nav-link" href="{% url 'auth:login' %}">Войти {{total}} <i class="fas fa-sign-in-alt"></i></a>
                     </li>
                 {% endif %}
             </ul>
