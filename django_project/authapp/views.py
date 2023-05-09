@@ -1,14 +1,15 @@
 from django.contrib import auth, messages
 from django.shortcuts import render
-from authapp.forms import UserLoginForm, UserRegisterForm, UserProfileForm
+from authapp.forms import UserLoginForm, UserRegisterForm, UserProfileForm, ShopUserProfileEditForm
 from django.urls import reverse_lazy
 from basket.models import Basket
 from authapp.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.utils.decorators import method_decorator
 from .utils import send_verify_mail
+from django.shortcuts import get_object_or_404
 
 
 
@@ -25,11 +26,11 @@ class LoginCreateView(LoginView):
         return url
 
 
-class ProfileCreateView(CreateView):
+class ProfileCreateView(UpdateView):
     model = User
     form_class = UserProfileForm
     template_name = 'authapp/profile.html'
-    success_url = 'auth:profile'
+    success_url = reverse_lazy('index')
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -37,6 +38,7 @@ class ProfileCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['form_profile'] = ShopUserProfileEditForm(instance=self.request.user.shopuserprofile)
         context['baskets'] = Basket.objects.filter(user=self.request.user)
         return context
 
@@ -70,10 +72,10 @@ class LogoutUserView(LogoutView):
 
 
 def verify(request, user_id, hash):
-    user = User.objects.get(pk=user_id)
+    user = get_object_or_404(User, pk=user_id)
     if user.activation_key == hash and not user.is_activation_key_expires():
         user.is_active = True
         user.activation_key = None
         user.save()
-        auth.login(request, user)
+        auth.login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     return render(request, 'authapp/verification.html')
