@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-    <div class="category_delete">
+    <div class="category_delete" style="text-align:center">
         <div class="h1">Уверены, что хотите удалить?</div>
         {% include 'ordersapp/inc_order_summary.html' %}
         <form action="{% url 'ordersapp:order_delete' object.pk %}" method="post">
